@@ -1,0 +1,9 @@
+{
+	"name": "fbzl/turing-robot",
+    "description": "A PHP SDK for www.tuling123.com",
+    "license": "MIT",
+    "require": {
+        "php": ">=5.4",
+        "guzzlehttp/guzzle": "~6.0"
+    }
+}
