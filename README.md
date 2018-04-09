@@ -25,7 +25,11 @@ require 'turingRobot.class.php';
 
 $test = new TuringRobot('你的 API Key','你的 secret');
 
+// 聊天
 echo $test->say('你好');
+
+// 询问天气
+echo $test->say('天气','123456789','北京市');
 ```
 
 ## API文档
