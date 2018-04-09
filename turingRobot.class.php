@@ -1,4 +1,8 @@
 <?php
+/**
+ * 图灵机器人
+ */
+
 use GuzzleHttp\Client;
 
 class TuringRobot
@@ -10,9 +14,10 @@ class TuringRobot
     private static $iv = [0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00];
 
     /**
-     * 图灵机器人
+     * TuringRobot constructor.
      *
-     * @return void
+     * @param $apiKey
+     * @param $apiSecret
      */
     public function __construct($apiKey, $apiSecret)
     {
@@ -24,15 +29,15 @@ class TuringRobot
     /**
      * say
      *
-     * @param  string $info   请求内容，编码方式为UTF-8
+     * @param  string $info 请求内容，编码方式为UTF-8
      * @param  string $userid 用户分配的唯一标志
-     * @param  string $loc    位置信息，请求跟地理位置相关的内容时使用，编码方式UTF-8
+     * @param  string $loc 位置信息，请求跟地理位置相关的内容时使用，编码方式UTF-8
      * @return string
      */
     public function say($info = '你好', $userid = '', $loc = '')
     {
         $param = [
-        	'key' => self::$apiKey,
+            'key' => self::$apiKey,
             'info' => $info,
             'userid' => $userid,
             'loc' => $loc,
@@ -68,19 +73,16 @@ class TuringRobot
     protected static function encrypt($param)
     {
         $keyParam = self::$apiSecret . self::$timestamp . self::$apiKey;
+
+        // 兼容 java md5 hash, api 太坑了, 用了两次 md5, 第二次还是 hash
         $key = md5($keyParam);
-        $str = json_encode($param);
-        // PKCS5 padding
-        $pad = 16 - (strlen($str) % 16);
-        $str .= str_repeat(chr($pad), $pad);
-        // 兼容 java md5 hash, api 太坑了, 用了两次 md5, 第二次还是hash
         $key = hash('md5', $key, true);
-        $iv = implode(array_map("chr", self::$iv));;
-        $td = mcrypt_module_open('rijndael-128', '', 'cbc', '');
-        mcrypt_generic_init($td, $key, $iv);
-        $encrypted = mcrypt_generic($td, $str);
-        mcrypt_generic_deinit($td);
-        mcrypt_module_close($td);
-        return base64_encode($encrypted);
+
+        $str = json_encode($param);
+
+        $iv = implode(array_map("chr", self::$iv));
+        $encrypted = openssl_encrypt($str, 'AES-128-CBC', $key, 0, $iv);
+
+        return $encrypted;
     }
 }
